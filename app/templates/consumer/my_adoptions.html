@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}我的认养 - 农源认养{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h2>我的认养</h2>
+        <p>查看您的所有认养订单</p>
+    </div>
+    
+    <div class="filter-bar">
+        <div class="filter-links">
+            <a href="/consumer/my-adoptions" class="filter-link {% if not status_filter %}active{% endif %}">全部</a>
+            <a href="/consumer/my-adoptions?status_filter=pending" class="filter-link {% if status_filter == 'pending' %}active{% endif %}">待确认</a>
+            <a href="/consumer/my-adoptions?status_filter=confirmed" class="filter-link {% if status_filter == 'confirmed' %}active{% endif %}">已确认</a>
+            <a href="/consumer/my-adoptions?status_filter=completed" class="filter-link {% if status_filter == 'completed' %}active{% endif %}">已完成</a>
+            <a href="/consumer/my-adoptions?status_filter=refunded" class="filter-link {% if status_filter == 'refunded' %}active{% endif %}">已退款</a>
+        </div>
+    </div>
+    
+    <div class="adoption-list">
+        {% for adoption in adoptions %}
+        <div class="adoption-card">
+            <div class="adoption-header">
+                <div>
+                    <span class="order-number">订单号：#{{ adoption.id }}</span>
+                    <span class="order-date">{{ adoption.created_at }}</span>
+                </div>
+                <span class="status-badge status-{{ adoption.status }}">{{ adoption.status }}</span>
+            </div>
+            
+            <div class="adoption-body">
+                <div class="adoption-plot">
+                    <div class="plot-icon">
+                        {% if adoption.plot_type == '果园' %}🍎
+                        {% elif adoption.plot_type == '茶田' %}🍵
+                        {% else %}🥬{% endif %}
+                    </div>
+                    <div class="plot-info">
+                        <h3>{{ adoption.batch_name }}</h3>
+                        <p>{{ adoption.plot_name }} · 👨‍🌾 {{ adoption.farmer_name }}</p>
+                    </div>
+                </div>
+                
+                <div class="adoption-details">
+                    <div class="detail-item">
+                        <span class="label">数量</span>
+                        <span class="value">{{ adoption.quantity }} {{ adoption.unit }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">单价</span>
+                        <span class="value">¥{{ "%.2f"|format(adoption.unit_price) }}/{{ adoption.unit }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">配送方式</span>
+                        <span class="value">{{ adoption.delivery_method or '-' }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">采摘日期</span>
+                        <span class="value">{{ adoption.pickup_date or '-' }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="adoption-footer">
+                <div class="total-price">
+                    <span>合计：</span>
+                    <span class="price">¥{{ "%.2f"|format(adoption.total_price) }}</span>
+                </div>
+                <div class="adoption-actions">
+                    <a href="/consumer/adoptions/{{ adoption.id }}" class="btn btn-outline">查看详情</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% if not adoptions %}
+    <div class="empty-state">
+        <p>您还没有认养订单</p>
+        <a href="/consumer/batches" class="btn btn-primary">去认养</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

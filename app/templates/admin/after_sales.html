@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}售后管理 - 管理后台{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="sidebar admin-sidebar">
+        <div class="sidebar-header">
+            <h3>管理后台</h3>
+            <p>{{ current_user.full_name }}</p>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="/admin/dashboard" class="sidebar-link">📊 控制台</a></li>
+            <li><a href="/admin/plots" class="sidebar-link">🌱 地块管理</a></li>
+            <li><a href="/admin/batches" class="sidebar-link">📦 批次管理</a></li>
+            <li><a href="/admin/adoptions" class="sidebar-link">📋 订单管理</a></li>
+            <li><a href="/admin/after-sales" class="sidebar-link active">🔧 售后管理</a></li>
+            <li><a href="/admin/users" class="sidebar-link">👥 用户管理</a></li>
+        </ul>
+    </div>
+    
+    <div class="main-panel">
+        <div class="page-header">
+            <div>
+                <h2>售后管理</h2>
+                <p>处理消费者的售后问题</p>
+            </div>
+        </div>
+        
+        <div class="filter-bar">
+            <div class="filter-links">
+                <a href="/admin/after-sales" class="filter-link {% if not status_filter %}active{% endif %}">全部</a>
+                <a href="/admin/after-sales?status_filter=pending" class="filter-link {% if status_filter == 'pending' %}active{% endif %}">待处理</a>
+                <a href="/admin/after-sales?status_filter=resolved" class="filter-link {% if status_filter == 'resolved' %}active{% endif %}">已解决</a>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>售后ID</th>
+                        <th>问题类型</th>
+                        <th>相关订单</th>
+                        <th>消费者</th>
+                        <th>问题描述</th>
+                        <th>状态</th>
+                        <th>处理结果</th>
+                        <th>提交时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sale in after_sales %}
+                    <tr>
+                        <td>#{{ sale.id }}</td>
+                        <td><span class="after-sale-type">{{ sale.type }}</span></td>
+                        <td>
+                            {{ sale.batch_name }}
+                            <br><small>{{ sale.quantity }} · ¥{{ "%.2f"|format(sale.total_price) }}</small>
+                        </td>
+                        <td>{{ sale.consumer_name }}</td>
+                        <td class="desc-cell">{{ sale.description }}</td>
+                        <td><span class="status-badge status-{{ sale.status }}">{{ sale.status }}</span></td>
+                        <td class="desc-cell">{{ sale.resolution or '-' }}</td>
+                        <td>{{ sale.created_at }}</td>
+                        <td>
+                            {% if sale.status == 'pending' %}
+                            <form method="post" action="/admin/after-sales/{{ sale.id }}/resolve" style="display:inline;" 
+                                  onsubmit="event.preventDefault(); resolveSale({{ sale.id }}, this);">
+                                <button type="button" class="btn btn-small btn-primary" onclick="showResolveModal({{ sale.id }})">处理</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if not after_sales %}
+        <div class="empty-state">
+            <p>暂无售后数据</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 处理售后弹窗 -->
+<div id="resolveModal" class="modal">
+    <div class="modal-content">
+        <h3>处理售后</h3>
+        <form id="resolveForm" method="post" action="">
+            <div class="form-group">
+                <label for="resolution">处理结果</label>
+                <textarea id="resolution" name="resolution" rows="4" required class="form-input" 
+                          placeholder="请输入处理结果和解决方案"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeResolveModal()">取消</button>
+                <button type="submit" class="btn btn-primary">确认处理</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function showResolveModal(saleId) {
+    document.getElementById('resolveForm').action = '/admin/after-sales/' + saleId + '/resolve';
+    document.getElementById('resolveModal').style.display = 'flex';
+}
+
+function closeResolveModal() {
+    document.getElementById('resolveModal').style.display = 'none';
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('resolveModal');
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

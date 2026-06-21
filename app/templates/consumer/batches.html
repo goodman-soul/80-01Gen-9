@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}认养批次 - 农源认养{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h2>认养批次</h2>
+        <p>选择您喜欢的地块和批次，开启认养之旅</p>
+    </div>
+    
+    <div class="filter-bar">
+        <div class="filter-links">
+            <a href="/consumer/batches" class="filter-link {% if not type_filter %}active{% endif %}">全部</a>
+            <a href="/consumer/batches?type_filter=果园" class="filter-link {% if type_filter == '果园' %}active{% endif %}">🍎 果园</a>
+            <a href="/consumer/batches?type_filter=茶田" class="filter-link {% if type_filter == '茶田' %}active{% endif %}">🍵 茶田</a>
+            <a href="/consumer/batches?type_filter=菜地" class="filter-link {% if type_filter == '菜地' %}active{% endif %}">🥬 菜地</a>
+        </div>
+    </div>
+    
+    <div class="batch-grid">
+        {% for batch in batches %}
+        <div class="batch-card">
+            <div class="batch-type-badge">{{ batch.plot_type }}</div>
+            <div class="batch-image">
+                <div class="batch-placeholder large">
+                    {% if batch.plot_type == '果园' %}🍎🍓🍊
+                    {% elif batch.plot_type == '茶田' %}🍵🌿
+                    {% else %}🥬🥕🍅{% endif %}
+                </div>
+            </div>
+            <div class="batch-info">
+                <h3 class="batch-name">{{ batch.name }}</h3>
+                <p class="batch-farm">📍 {{ batch.plot_location }} · 👨‍🌾 {{ batch.farmer_name }}</p>
+                <p class="batch-description">{{ batch.description }}</p>
+                
+                {% if batch.delivery_methods %}
+                <div class="delivery-tags">
+                    {% for method in batch.delivery_methods %}
+                    <span class="delivery-tag">{{ method }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <div class="batch-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ batch.progress }}%"></div>
+                    </div>
+                    <span class="progress-text">已认养 {{ batch.adopted_quantity }} / {{ batch.total_quantity }} {{ batch.unit }}</span>
+                </div>
+                
+                <div class="batch-footer">
+                    <div>
+                        <span class="batch-price">¥{{ "%.2f"|format(batch.price) }}</span>
+                        <span class="batch-unit">/{{ batch.unit }}</span>
+                    </div>
+                    <a href="/consumer/batches/{{ batch.id }}" class="btn btn-primary">立即认养</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% if not batches %}
+    <div class="empty-state">
+        <p>暂无认养批次</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}注册 - 农源认养{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h2 class="auth-title">创建账户</h2>
+        <p class="auth-subtitle">加入我们，开启健康认养之旅</p>
+        
+        {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+        {% endif %}
+        
+        <form method="post" action="/auth/register" class="auth-form">
+            <div class="form-group">
+                <label for="username">用户名 *</label>
+                <input type="text" id="username" name="username" required class="form-input" placeholder="请输入用户名">
+            </div>
+            <div class="form-group">
+                <label for="email">邮箱 *</label>
+                <input type="email" id="email" name="email" required class="form-input" placeholder="请输入邮箱">
+            </div>
+            <div class="form-group">
+                <label for="full_name">姓名</label>
+                <input type="text" id="full_name" name="full_name" class="form-input" placeholder="请输入真实姓名">
+            </div>
+            <div class="form-group">
+                <label for="role">身份类型 *</label>
+                <select id="role" name="role" class="form-input">
+                    <option value="consumer">消费者</option>
+                    <option value="farmer">农户</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="password">密码 *</label>
+                <input type="password" id="password" name="password" required class="form-input" placeholder="至少6位字符">
+            </div>
+            <div class="form-group">
+                <label for="confirm_password">确认密码 *</label>
+                <input type="password" id="confirm_password" name="confirm_password" required class="form-input" placeholder="请再次输入密码">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">注册</button>
+        </form>
+        
+        <div class="auth-footer">
+            <p>已有账户？<a href="/auth/login">立即登录</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

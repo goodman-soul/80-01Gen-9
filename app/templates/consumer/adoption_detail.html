@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}订单详情 #{{ adoption.id }} - 农源认养{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="breadcrumb">
+        <a href="/consumer/my-adoptions">我的认养</a> / 
+        <span>订单 #{{ adoption.id }}</span>
+    </div>
+    
+    <div class="detail-layout">
+        <div class="detail-main">
+            <div class="order-status-card">
+                <div class="status-header">
+                    <h2>订单 #{{ adoption.id }}</h2>
+                    <span class="status-badge large status-{{ adoption.status }}">{{ adoption.status }}</span>
+                </div>
+                <p class="order-time">下单时间：{{ adoption.created_at }}</p>
+            </div>
+            
+            <div class="info-card">
+                <h3>认养信息</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">批次名称</span>
+                        <span class="info-value">{{ adoption.batch_name }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">地块名称</span>
+                        <span class="info-value">{{ adoption.plot_name }} ({{ adoption.plot_type }})</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">所在地区</span>
+                        <span class="info-value">{{ adoption.plot_location }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">农户</span>
+                        <span class="info-value">{{ adoption.farmer_name }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">认养数量</span>
+                        <span class="info-value">{{ adoption.quantity }} {{ adoption.unit }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">单价</span>
+                        <span class="info-value">¥{{ "%.2f"|format(adoption.unit_price) }}/{{ adoption.unit }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">采摘日期</span>
+                        <span class="info-value">{{ adoption.pickup_date or '待定' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">配送方式</span>
+                        <span class="info-value">{{ adoption.delivery_method or '-' }}</span>
+                    </div>
+                </div>
+                {% if adoption.delivery_address %}
+                <div class="info-item full">
+                    <span class="info-label">收货地址</span>
+                    <span class="info-value">{{ adoption.delivery_address }}</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            {% if weather_events %}
+            <div class="info-card weather-card">
+                <h3>🌤️ 天气影响通知</h3>
+                {% for event in weather_events %}
+                <div class="weather-alert severity-{{ event.severity }}">
+                    <div class="alert-header">
+                        <span class="weather-type">{{ event.event_type }}</span>
+                        <span class="severity-badge severity-{{ event.severity }}">{{ event.severity }}</span>
+                    </div>
+                    <p>{{ event.description }}</p>
+                    {% if event.affected_date %}
+                    <p class="alert-date">影响日期：{{ event.affected_date }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                <p class="weather-hint">受天气影响，您可以选择以下方案：</p>
+                <div class="weather-actions">
+                    {% if adoption.status in ['pending', 'confirmed'] %}
+                    <button class="btn btn-outline" onclick="showReschedule()">改期</button>
+                    <button class="btn btn-outline" onclick="showSwitchBatch()">换批次</button>
+                    <button class="btn btn-danger" onclick="showRefund()">申请退款</button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="info-card">
+                <h3>售后问题</h3>
+                {% if after_sales %}
+                <div class="after-sale-list">
+                    {% for sale in after_sales %}
+                    <div class="after-sale-item">
+                        <div class="after-sale-header">
+                            <span class="after-sale-type">{{ sale.type }}</span>
+                            <span class="status-badge status-{{ sale.status }}">{{ sale.status }}</span>
+                        </div>
+                        <p class="after-sale-desc">{{ sale.description }}</p>
+                        <p class="after-sale-time">提交时间：{{ sale.created_at }}</p>
+                        {% if sale.resolution %}
+                        <div class="after-sale-resolution">
+                            <strong>处理结果：</strong>{{ sale.resolution }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="empty-text">暂无售后记录</p>
+                {% endif %}
+                
+                {% if adoption.status in ['confirmed', 'completed'] %}
+                <button class="btn btn-outline" onclick="showAfterSale()">提交售后</button>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="detail-sidebar">
+            <div class="price-summary-card">
+                <h3>订单金额</h3>
+                <div class="price-row">
+                    <span>商品金额</span>
+                    <span>¥{{ "%.2f"|format(adoption.total_price) }}</span>
+                </div>
+                <div class="price-row total">
+                    <span>合计</span>
+                    <span class="total-amount">¥{{ "%.2f"|format(adoption.total_price) }}</span>
+                </div>
+            </div>
+            
+            {% if adoption.status in ['pending', 'confirmed'] %}
+            <div class="action-card">
+                <h3>订单操作</h3>
+                <button class="btn btn-outline btn-block" onclick="showReschedule()">改期采摘</button>
+                <button class="btn btn-outline btn-block" onclick="showSwitchBatch()">更换批次</button>
+                <button class="btn btn-danger btn-block" onclick="showRefund()">申请退款</button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- 改期弹窗 -->
+<div id="rescheduleModal" class="modal">
+    <div class="modal-content">
+        <h3>改期采摘</h3>
+        <form method="post" action="/consumer/adoptions/{{ adoption.id }}/reschedule">
+            <div class="form-group">
+                <label for="new_pickup_date">新的采摘日期</label>
+                <input type="date" id="new_pickup_date" name="new_pickup_date" required class="form-input"
+                       value="{{ adoption.pickup_date }}">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('rescheduleModal')">取消</button>
+                <button type="submit" class="btn btn-primary">确认改期</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 退款弹窗 -->
+<div id="refundModal" class="modal">
+    <div class="modal-content">
+        <h3>申请退款</h3>
+        <p>确定要申请退款吗？退款后订单将取消。</p>
+        <form method="post" action="/consumer/adoptions/{{ adoption.id }}/refund">
+            <div class="form-group">
+                <label for="reason">退款原因</label>
+                <textarea id="reason" name="reason" rows="3" class="form-input" placeholder="请输入退款原因"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('refundModal')">取消</button>
+                <button type="submit" class="btn btn-danger">确认退款</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 换批次弹窗 -->
+<div id="switchBatchModal" class="modal">
+    <div class="modal-content">
+        <h3>更换批次</h3>
+        <p>选择同一地块的其他批次进行更换</p>
+        <form method="post" action="/consumer/adoptions/{{ adoption.id }}/switch-batch">
+            <div class="form-group">
+                <label for="new_batch_id">选择新批次</label>
+                <select id="new_batch_id" name="new_batch_id" required class="form-input">
+                    <option value="">请选择批次</option>
+                    {% for batch in [] %}
+                    <option value="{{ batch.id }}">{{ batch.name }} - ¥{{ batch.price }}/{{ batch.unit }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <p class="hint">注意：只能更换同一地块的批次，差价将多退少补</p>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('switchBatchModal')">取消</button>
+                <button type="submit" class="btn btn-primary">确认更换</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 售后弹窗 -->
+<div id="afterSaleModal" class="modal">
+    <div class="modal-content">
+        <h3>提交售后</h3>
+        <form method="post" action="/consumer/adoptions/{{ adoption.id }}/after-sale">
+            <div class="form-group">
+                <label for="type">问题类型</label>
+                <select id="type" name="type" required class="form-input">
+                    <option value="quality">质量问题</option>
+                    <option value="delivery">配送问题</option>
+                    <option value="quantity">数量问题</option>
+                    <option value="other">其他问题</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="description">问题描述</label>
+                <textarea id="description" name="description" rows="4" required class="form-input" 
+                          placeholder="请详细描述您遇到的问题"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('afterSaleModal')">取消</button>
+                <button type="submit" class="btn btn-primary">提交</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function showReschedule() {
+    document.getElementById('rescheduleModal').style.display = 'flex';
+}
+
+function showRefund() {
+    document.getElementById('refundModal').style.display = 'flex';
+}
+
+function showSwitchBatch() {
+    document.getElementById('switchBatchModal').style.display = 'flex';
+}
+
+function showAfterSale() {
+    document.getElementById('afterSaleModal').style.display = 'flex';
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+window.onclick = function(event) {
+    const modals = document.getElementsByClassName('modal');
+    for (let modal of modals) {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    }
+}
+</script>
+{% endblock %}

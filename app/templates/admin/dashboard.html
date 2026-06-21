@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}管理后台 - 农源认养{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="sidebar admin-sidebar">
+        <div class="sidebar-header">
+            <h3>管理后台</h3>
+            <p>{{ current_user.full_name }}</p>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="/admin/dashboard" class="sidebar-link active">📊 控制台</a></li>
+            <li><a href="/admin/plots" class="sidebar-link">🌱 地块管理</a></li>
+            <li><a href="/admin/batches" class="sidebar-link">📦 批次管理</a></li>
+            <li><a href="/admin/adoptions" class="sidebar-link">📋 订单管理</a></li>
+            <li><a href="/admin/after-sales" class="sidebar-link">🔧 售后管理</a></li>
+            <li><a href="/admin/users" class="sidebar-link">👥 用户管理</a></li>
+        </ul>
+    </div>
+    
+    <div class="main-panel">
+        <div class="page-header">
+            <h2>控制台</h2>
+            <p>平台数据概览</p>
+        </div>
+        
+        <div class="stats-grid admin-stats">
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-info">
+                    <h3>{{ stats.consumer_count }}</h3>
+                    <p>消费者</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">👨‍🌾</div>
+                <div class="stat-info">
+                    <h3>{{ stats.farmer_count }}</h3>
+                    <p>农户数</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🌱</div>
+                <div class="stat-info">
+                    <h3>{{ stats.plot_count }}</h3>
+                    <p>地块数量</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📦</div>
+                <div class="stat-info">
+                    <h3>{{ stats.open_batch_count }}</h3>
+                    <p>进行中批次</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🛒</div>
+                <div class="stat-info">
+                    <h3>{{ stats.total_adoptions }}</h3>
+                    <p>总订单数</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-info">
+                    <h3>¥{{ "%.2f"|format(stats.total_revenue) }}</h3>
+                    <p>总交易额</p>
+                </div>
+            </div>
+            <div class="stat-card warning">
+                <div class="stat-icon">⚠️</div>
+                <div class="stat-info">
+                    <h3>{{ stats.pending_after_sales }}</h3>
+                    <p>待处理售后</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="dashboard-sections">
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <h3>热门地块</h3>
+                    <a href="/admin/plots" class="btn btn-small btn-outline">查看全部</a>
+                </div>
+                <div class="plot-rank-list">
+                    {% for plot in top_plots %}
+                    <div class="plot-rank-item">
+                        <span class="rank-number">{{ loop.index }}</span>
+                        <div class="plot-rank-info">
+                            <h4>{{ plot.name }}</h4>
+                            <p>{{ plot.type }} · {{ plot.location }} · {{ plot.farmer_name }}</p>
+                        </div>
+                        <div class="plot-rank-stats">
+                            <span>{{ plot.adopter_count }} 人认养</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <h3>最近批次</h3>
+                    <a href="/admin/batches" class="btn btn-small btn-outline">查看全部</a>
+                </div>
+                <div class="batch-mini-list">
+                    {% for batch in recent_batches %}
+                    <div class="batch-mini-item">
+                        <div class="batch-mini-info">
+                            <h4>{{ batch.name }}</h4>
+                            <p>{{ batch.plot_name }} · {{ batch.farmer_name }}</p>
+                        </div>
+                        <div class="batch-mini-progress">
+                            <div class="progress-bar small">
+                                <div class="progress-fill" style="width: {{ batch.progress }}%"></div>
+                            </div>
+                            <span>{{ batch.progress }}%</span>
+                        </div>
+                        <span class="status-badge status-{{ batch.status }}">{{ batch.status }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="dashboard-section">
+            <div class="section-header">
+                <h3>待处理售后</h3>
+                <a href="/admin/after-sales" class="btn btn-small btn-outline">查看全部</a>
+            </div>
+            {% if pending_after_sales %}
+            <div class="after-sale-mini-list">
+                {% for sale in pending_after_sales %}
+                <div class="after-sale-mini-item">
+                    <div class="after-sale-mini-info">
+                        <span class="after-sale-type">{{ sale.type }}</span>
+                        <h4>{{ sale.batch_name }}</h4>
+                        <p>{{ sale.consumer_name }} · ¥{{ "%.2f"|format(sale.total_price) }}</p>
+                        <p class="after-sale-desc">{{ sale.description }}</p>
+                    </div>
+                    <a href="/admin/after-sales" class="btn btn-small btn-primary">处理</a>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="empty-text">暂无待处理售后</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

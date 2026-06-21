@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}我的地块 - 农户中心{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3>农户中心</h3>
+            <p>{{ current_user.full_name }}</p>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="/farmer/dashboard" class="sidebar-link">📊 控制台</a></li>
+            <li><a href="/farmer/plots" class="sidebar-link active">🌱 我的地块</a></li>
+            <li><a href="/farmer/batches" class="sidebar-link">📦 认养批次</a></li>
+            <li><a href="/farmer/adoptions" class="sidebar-link">📋 认养订单</a></li>
+            <li><a href="/farmer/weather" class="sidebar-link">🌤️ 天气事件</a></li>
+        </ul>
+    </div>
+    
+    <div class="main-panel">
+        <div class="page-header">
+            <div>
+                <h2>我的地块</h2>
+                <p>管理您的果园、茶田和菜地</p>
+            </div>
+            <a href="/farmer/plots/new" class="btn btn-primary">+ 新增地块</a>
+        </div>
+        
+        <div class="card-grid">
+            {% for plot in plots %}
+            <div class="card">
+                <div class="card-header">
+                    <span class="plot-type-badge">{{ plot.type }}</span>
+                    <span class="status-badge status-{{ plot.status }}">{{ plot.status }}</span>
+                </div>
+                <h3 class="card-title">{{ plot.name }}</h3>
+                <div class="card-body">
+                    <p>📍 {{ plot.location }}</p>
+                    <p>📐 {{ plot.area }} 亩</p>
+                    <p>📦 {{ plot.batch_count }} 个批次</p>
+                    <p class="card-description">{{ plot.description }}</p>
+                </div>
+                <div class="card-footer">
+                    <a href="/farmer/plots/{{ plot.id }}/edit" class="btn btn-small btn-outline">编辑</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if not plots %}
+        <div class="empty-state">
+            <p>还没有地块，点击右上角新增您的第一个地块</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

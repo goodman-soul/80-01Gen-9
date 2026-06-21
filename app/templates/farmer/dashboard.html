@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}农户中心 - 农源认养{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3>农户中心</h3>
+            <p>{{ current_user.full_name }}</p>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="/farmer/dashboard" class="sidebar-link active">📊 控制台</a></li>
+            <li><a href="/farmer/plots" class="sidebar-link">🌱 我的地块</a></li>
+            <li><a href="/farmer/batches" class="sidebar-link">📦 认养批次</a></li>
+            <li><a href="/farmer/adoptions" class="sidebar-link">📋 认养订单</a></li>
+            <li><a href="/farmer/weather" class="sidebar-link">🌤️ 天气事件</a></li>
+        </ul>
+    </div>
+    
+    <div class="main-panel">
+        <div class="page-header">
+            <h2>控制台</h2>
+            <p>欢迎回来，{{ current_user.full_name }}</p>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">🌱</div>
+                <div class="stat-info">
+                    <h3>{{ stats.plot_count }}</h3>
+                    <p>地块数量</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📦</div>
+                <div class="stat-info">
+                    <h3>{{ stats.batch_count }}</h3>
+                    <p>认养批次</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-info">
+                    <h3>{{ stats.total_adopted }}</h3>
+                    <p>总认养量</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-info">
+                    <h3>¥{{ "%.2f"|format(stats.total_revenue) }}</h3>
+                    <p>总营收</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="dashboard-sections">
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <h3>我的地块</h3>
+                    <a href="/farmer/plots" class="btn btn-small btn-outline">查看全部</a>
+                </div>
+                <div class="plot-list">
+                    {% for plot in plots[:5] %}
+                    <div class="plot-item">
+                        <div class="plot-type-badge">{{ plot.type }}</div>
+                        <h4>{{ plot.name }}</h4>
+                        <p>📍 {{ plot.location }}</p>
+                        <p>📦 {{ plot.batch_count }} 个批次</p>
+                        <span class="status-badge status-{{ plot.status }}">{{ plot.status }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <h3>待处理订单</h3>
+                    <a href="/farmer/adoptions?status_filter=pending" class="btn btn-small btn-outline">查看全部</a>
+                </div>
+                {% if pending_orders %}
+                <div class="order-list">
+                    {% for order in pending_orders %}
+                    <div class="order-item">
+                        <div class="order-info">
+                            <h4>{{ order.batch_name }}</h4>
+                            <p>👤 {{ order.consumer_name }}</p>
+                            <p>📦 {{ order.quantity }} · ¥{{ "%.2f"|format(order.total_price) }}</p>
+                        </div>
+                        <form method="post" action="/farmer/adoptions/{{ order.id }}/confirm" style="display:inline;">
+                            <button type="submit" class="btn btn-small btn-primary">确认</button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="empty-text">暂无待处理订单</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="dashboard-section">
+            <div class="section-header">
+                <h3>最近天气事件</h3>
+                <a href="/farmer/weather" class="btn btn-small btn-outline">查看全部</a>
+            </div>
+            {% if weather_events %}
+            <div class="weather-list">
+                {% for event in weather_events %}
+                <div class="weather-item severity-{{ event.severity }}">
+                    <div class="weather-type">{{ event.event_type }}</div>
+                    <div class="weather-info">
+                        <h4>{{ event.batch_name }}</h4>
+                        <p>{{ event.description }}</p>
+                        <span class="weather-date">影响日期：{{ event.affected_date }}</span>
+                    </div>
+                    <span class="severity-badge severity-{{ event.severity }}">{{ event.severity }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="empty-text">暂无天气事件</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

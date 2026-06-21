@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}{{ batch.name }} - 农源认养{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="breadcrumb">
+        <a href="/">首页</a> / 
+        <a href="/consumer/batches">认养批次</a> / 
+        <span>{{ batch.name }}</span>
+    </div>
+    
+    <div class="detail-layout">
+        <div class="detail-main">
+            <div class="detail-image">
+                <div class="detail-placeholder">
+                    {% if batch.plot_type == '果园' %}🍎🍓🍊
+                    {% elif batch.plot_type == '茶田' %}🍵🌿
+                    {% else %}🥬🥕🍅{% endif %}
+                </div>
+            </div>
+            
+            <div class="detail-info">
+                <span class="batch-type-badge large">{{ batch.plot_type }}</span>
+                <h1 class="detail-title">{{ batch.name }}</h1>
+                <div class="detail-meta">
+                    <span>📍 {{ batch.plot_location }}</span>
+                    <span>👨‍🌾 {{ batch.farmer_name }}</span>
+                    <span>📅 预计采摘：{{ batch.harvest_date or '待定' }}</span>
+                </div>
+                
+                <div class="detail-price">
+                    <span class="price-symbol">¥</span>
+                    <span class="price-value">{{ "%.2f"|format(batch.price) }}</span>
+                    <span class="price-unit">/{{ batch.unit }}</span>
+                </div>
+                
+                <div class="progress-section">
+                    <div class="progress-bar large">
+                        <div class="progress-fill" style="width: {{ batch.progress }}%"></div>
+                    </div>
+                    <div class="progress-info">
+                        <span>已认养 {{ batch.adopted_quantity }} {{ batch.unit }}</span>
+                        <span>剩余 {{ batch.remaining }} {{ batch.unit }}</span>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>配送方式</h3>
+                    <div class="delivery-options">
+                        {% for method in batch.delivery_methods %}
+                        <span class="delivery-option">{{ method }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>批次介绍</h3>
+                    <p>{{ batch.description }}</p>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>地块信息</h3>
+                    <p><strong>{{ batch.plot_name }}</strong></p>
+                    <p>{{ batch.plot_description }}</p>
+                    <p>面积：{{ batch.plot_area }} 亩</p>
+                </div>
+                
+                {% if weather_events %}
+                <div class="detail-section weather-section">
+                    <h3>⚠️ 天气事件通知</h3>
+                    {% for event in weather_events %}
+                    <div class="weather-alert severity-{{ event.severity }}">
+                        <div class="alert-header">
+                            <span class="weather-type">{{ event.event_type }}</span>
+                            <span class="severity-badge severity-{{ event.severity }}">{{ event.severity }}</span>
+                        </div>
+                        <p>{{ event.description }}</p>
+                        {% if event.affected_date %}
+                        <p class="alert-date">影响日期：{{ event.affected_date }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    <p class="weather-hint">如受天气影响，您可以选择改期、退款或更换批次</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="detail-sidebar">
+            <div class="adopt-form-card">
+                <h3>立即认养</h3>
+                
+                {% if current_user and current_user.role == 'consumer' %}
+                {% if batch.status == 'open' and batch.remaining > 0 %}
+                <form method="post" action="/consumer/batches/{{ batch.id }}/adopt" class="adopt-form">
+                    <div class="form-group">
+                        <label for="quantity">认养数量（{{ batch.unit }}）</label>
+                        <div class="quantity-input">
+                            <button type="button" class="qty-btn" onclick="changeQuantity(-1)">−</button>
+                            <input type="number" id="quantity" name="quantity" value="1" min="1" max="{{ batch.remaining }}" onchange="updateTotal()">
+                            <button type="button" class="qty-btn" onclick="changeQuantity(1)">+</button>
+                        </div>
+                        <small>剩余 {{ batch.remaining }} {{ batch.unit }}</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="pickup_date">预计采摘/配送日期</label>
+                        <input type="date" id="pickup_date" name="pickup_date" class="form-input"
+                               value="{{ batch.harvest_date }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="delivery_method">配送方式</label>
+                        <select id="delivery_method" name="delivery_method" class="form-input">
+                            {% for method in batch.delivery_methods %}
+                            <option value="{{ method }}">{{ method }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="delivery_address">收货地址</label>
+                        <textarea id="delivery_address" name="delivery_address" rows="2" class="form-input"
+                                  placeholder="如选择快递或配送，请填写详细地址"></textarea>
+                    </div>
+                    
+                    <div class="total-price">
+                        <span>合计：</span>
+                        <span class="total-amount">¥<span id="totalPrice">{{ "%.2f"|format(batch.price) }}</span></span>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-block btn-large">确认认养</button>
+                </form>
+                {% else %}
+                <div class="sold-out">
+                    <p>该批次已结束或已售罄</p>
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="login-prompt">
+                    <p>请先登录后再认养</p>
+                    <a href="/auth/login" class="btn btn-primary btn-block">立即登录</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function changeQuantity(delta) {
+    const input = document.getElementById('quantity');
+    const max = parseInt(input.max);
+    let value = parseInt(input.value) + delta;
+    if (value < 1) value = 1;
+    if (value > max) value = max;
+    input.value = value;
+    updateTotal();
+}
+
+function updateTotal() {
+    const quantity = parseInt(document.getElementById('quantity').value);
+    const price = {{ batch.price }};
+    const total = (quantity * price).toFixed(2);
+    document.getElementById('totalPrice').textContent = total;
+}
+</script>
+{% endblock %}

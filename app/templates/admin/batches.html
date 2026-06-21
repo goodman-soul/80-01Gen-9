@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}批次管理 - 管理后台{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="sidebar admin-sidebar">
+        <div class="sidebar-header">
+            <h3>管理后台</h3>
+            <p>{{ current_user.full_name }}</p>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="/admin/dashboard" class="sidebar-link">📊 控制台</a></li>
+            <li><a href="/admin/plots" class="sidebar-link">🌱 地块管理</a></li>
+            <li><a href="/admin/batches" class="sidebar-link active">📦 批次管理</a></li>
+            <li><a href="/admin/adoptions" class="sidebar-link">📋 订单管理</a></li>
+            <li><a href="/admin/after-sales" class="sidebar-link">🔧 售后管理</a></li>
+            <li><a href="/admin/users" class="sidebar-link">👥 用户管理</a></li>
+        </ul>
+    </div>
+    
+    <div class="main-panel">
+        <div class="page-header">
+            <div>
+                <h2>批次管理</h2>
+                <p>查看所有认养批次</p>
+            </div>
+        </div>
+        
+        <div class="filter-bar">
+            <div class="filter-links">
+                <a href="/admin/batches" class="filter-link {% if not status_filter %}active{% endif %}">全部</a>
+                <a href="/admin/batches?status_filter=open" class="filter-link {% if status_filter == 'open' %}active{% endif %}">认养中</a>
+                <a href="/admin/batches?status_filter=harvesting" class="filter-link {% if status_filter == 'harvesting' %}active{% endif %}">采摘中</a>
+                <a href="/admin/batches?status_filter=closed" class="filter-link {% if status_filter == 'closed' %}active{% endif %}">已结束</a>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>批次名称</th>
+                        <th>所属地块</th>
+                        <th>农户</th>
+                        <th>价格</th>
+                        <th>认养进度</th>
+                        <th>订单数</th>
+                        <th>认养人数</th>
+                        <th>采摘日期</th>
+                        <th>状态</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for batch in batches %}
+                    <tr>
+                        <td><strong>{{ batch.name }}</strong></td>
+                        <td>{{ batch.plot_name }}</td>
+                        <td>{{ batch.farmer_name }}</td>
+                        <td>¥{{ "%.2f"|format(batch.price) }}/{{ batch.unit }}</td>
+                        <td>
+                            <div class="progress-cell">
+                                <div class="progress-bar small">
+                                    <div class="progress-fill" style="width: {{ batch.progress }}%"></div>
+                                </div>
+                                <span>{{ batch.progress }}%</span>
+                            </div>
+                        </td>
+                        <td>{{ batch.adoption_count }} 单</td>
+                        <td>{{ batch.adopter_count }} 人</td>
+                        <td>{{ batch.harvest_date or '-' }}</td>
+                        <td><span class="status-badge status-{{ batch.status }}">{{ batch.status }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if not batches %}
+        <div class="empty-state">
+            <p>暂无批次数据</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

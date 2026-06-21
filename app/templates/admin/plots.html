@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}地块管理 - 管理后台{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="sidebar admin-sidebar">
+        <div class="sidebar-header">
+            <h3>管理后台</h3>
+            <p>{{ current_user.full_name }}</p>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="/admin/dashboard" class="sidebar-link">📊 控制台</a></li>
+            <li><a href="/admin/plots" class="sidebar-link active">🌱 地块管理</a></li>
+            <li><a href="/admin/batches" class="sidebar-link">📦 批次管理</a></li>
+            <li><a href="/admin/adoptions" class="sidebar-link">📋 订单管理</a></li>
+            <li><a href="/admin/after-sales" class="sidebar-link">🔧 售后管理</a></li>
+            <li><a href="/admin/users" class="sidebar-link">👥 用户管理</a></li>
+        </ul>
+    </div>
+    
+    <div class="main-panel">
+        <div class="page-header">
+            <div>
+                <h2>地块管理</h2>
+                <p>查看和管理所有地块</p>
+            </div>
+        </div>
+        
+        <div class="filter-bar">
+            <div class="filter-links">
+                <a href="/admin/plots" class="filter-link {% if not type_filter %}active{% endif %}">全部</a>
+                <a href="/admin/plots?type_filter=果园" class="filter-link {% if type_filter == '果园' %}active{% endif %}">果园</a>
+                <a href="/admin/plots?type_filter=茶田" class="filter-link {% if type_filter == '茶田' %}active{% endif %}">茶田</a>
+                <a href="/admin/plots?type_filter=菜地" class="filter-link {% if type_filter == '菜地' %}active{% endif %}">菜地</a>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>地块名称</th>
+                        <th>类型</th>
+                        <th>面积</th>
+                        <th>位置</th>
+                        <th>农户</th>
+                        <th>批次数量</th>
+                        <th>总认养量</th>
+                        <th>认养人数</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for plot in plots %}
+                    <tr>
+                        <td><strong>{{ plot.name }}</strong></td>
+                        <td><span class="plot-type-badge small">{{ plot.type }}</span></td>
+                        <td>{{ plot.area }} 亩</td>
+                        <td>{{ plot.location }}</td>
+                        <td>{{ plot.farmer_name }}</td>
+                        <td>{{ plot.batch_count }}</td>
+                        <td>{{ plot.total_adopted }}</td>
+                        <td>{{ plot.adopter_count }} 人</td>
+                        <td><span class="status-badge status-{{ plot.status }}">{{ plot.status }}</span></td>
+                        <td>
+                            <a href="/admin/plots/{{ plot.id }}" class="btn btn-small btn-outline">详情</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if not plots %}
+        <div class="empty-state">
+            <p>暂无地块数据</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

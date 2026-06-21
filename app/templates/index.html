@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}首页 - 农源认养{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <h1>从田间到餐桌，新鲜直达</h1>
+        <p>认养属于你的果园、茶田或菜地，亲手见证成长，收获健康与美味</p>
+        <div class="hero-buttons">
+            <a href="/consumer/batches" class="btn btn-primary">立即认养</a>
+            <a href="#features" class="btn btn-outline">了解更多</a>
+        </div>
+    </div>
+    <div class="hero-image">
+        <div class="hero-placeholder">
+            🌱🌾🍎🍓🍵
+        </div>
+    </div>
+</section>
+
+<section id="features" class="features">
+    <h2 class="section-title">为什么选择我们</h2>
+    <div class="feature-grid">
+        <div class="feature-card">
+            <div class="feature-icon">🌿</div>
+            <h3>有机种植</h3>
+            <p>所有地块采用有机种植方式，无农药化肥，健康安全</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">📦</div>
+            <h3>产地直供</h3>
+            <p>从农户到消费者，去除中间环节，价格更实惠</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🌤️</div>
+            <h3>透明可溯</h3>
+            <p>天气影响及时通知，改期退款换批次灵活选择</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🚚</div>
+            <h3>多种配送</h3>
+            <p>支持自提、快递、配送多种方式，满足不同需求</p>
+        </div>
+    </div>
+</section>
+
+<section class="batches-preview">
+    <h2 class="section-title">热门认养批次</h2>
+    <div class="batch-grid">
+        {% for batch in batches %}
+        <div class="batch-card">
+            <div class="batch-type-badge">{{ batch.plot_type }}</div>
+            <div class="batch-image">
+                <div class="batch-placeholder">
+                    {% if batch.plot_type == '果园' %}🍎
+                    {% elif batch.plot_type == '茶田' %}🍵
+                    {% else %}🥬{% endif %}
+                </div>
+            </div>
+            <div class="batch-info">
+                <h3 class="batch-name">{{ batch.name }}</h3>
+                <p class="batch-farm">📍 {{ batch.plot_location }} · {{ batch.farmer_name }}</p>
+                <p class="batch-description">{{ batch.description }}</p>
+                <div class="batch-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ batch.progress }}%"></div>
+                    </div>
+                    <span class="progress-text">已认养 {{ batch.progress }}%</span>
+                </div>
+                <div class="batch-footer">
+                    <span class="batch-price">¥{{ batch.price }}/{{ batch.unit }}</span>
+                    <a href="/consumer/batches/{{ batch.id }}" class="btn btn-small btn-primary">查看详情</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="view-more">
+        <a href="/consumer/batches" class="btn btn-outline">查看全部批次 →</a>
+    </div>
+</section>
+
+<section class="process">
+    <h2 class="section-title">认养流程</h2>
+    <div class="process-steps">
+        <div class="step">
+            <div class="step-number">1</div>
+            <h3>选择地块</h3>
+            <p>浏览果园、茶田、菜地，选择您喜欢的地块</p>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step">
+            <div class="step-number">2</div>
+            <h3>认养批次</h3>
+            <p>选择认养数量、采摘时间和配送方式</p>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step">
+            <div class="step-number">3</div>
+            <h3>等待成熟</h3>
+            <p>关注生长进度，天气变化及时通知</p>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step">
+            <div class="step-number">4</div>
+            <h3>收获美味</h3>
+            <p>采摘后按您选择的方式送达，新鲜美味</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

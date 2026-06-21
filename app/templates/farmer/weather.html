@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}天气事件 - 农户中心{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3>农户中心</h3>
+            <p>{{ current_user.full_name }}</p>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="/farmer/dashboard" class="sidebar-link">📊 控制台</a></li>
+            <li><a href="/farmer/plots" class="sidebar-link">🌱 我的地块</a></li>
+            <li><a href="/farmer/batches" class="sidebar-link">📦 认养批次</a></li>
+            <li><a href="/farmer/adoptions" class="sidebar-link">📋 认养订单</a></li>
+            <li><a href="/farmer/weather" class="sidebar-link active">🌤️ 天气事件</a></li>
+        </ul>
+    </div>
+    
+    <div class="main-panel">
+        <div class="page-header">
+            <div>
+                <h2>天气事件</h2>
+                <p>记录天气影响，及时通知消费者</p>
+            </div>
+        </div>
+        
+        <div class="form-card">
+            <h3>发布天气事件</h3>
+            <form method="post" action="/farmer/weather/new" class="form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="batch_id">影响批次 *</label>
+                        <select id="batch_id" name="batch_id" required class="form-input">
+                            {% for batch in batches %}
+                            <option value="{{ batch.id }}">{{ batch.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="event_type">天气类型 *</label>
+                        <select id="event_type" name="event_type" required class="form-input">
+                            <option value="暴雨">暴雨</option>
+                            <option value="干旱">干旱</option>
+                            <option value="冰雹">冰雹</option>
+                            <option value="霜冻">霜冻</option>
+                            <option value="高温">高温</option>
+                            <option value="台风">台风</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="severity">严重程度</label>
+                        <select id="severity" name="severity" class="form-input">
+                            <option value="mild">轻微</option>
+                            <option value="moderate" selected>中等</option>
+                            <option value="severe">严重</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="affected_date">影响日期</label>
+                        <input type="date" id="affected_date" name="affected_date" class="form-input">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">详细描述</label>
+                    <textarea id="description" name="description" rows="3" class="form-input" 
+                              placeholder="描述天气情况和对产量/品质的影响"></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">发布天气事件</button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="section-gap">
+            <h3>历史天气事件</h3>
+        </div>
+        
+        {% if events %}
+        <div class="weather-timeline">
+            {% for event in events %}
+            <div class="weather-timeline-item severity-{{ event.severity }}">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <div class="timeline-header">
+                        <span class="weather-type-badge">{{ event.event_type }}</span>
+                        <span class="severity-badge severity-{{ event.severity }}">{{ event.severity }}</span>
+                        <span class="timeline-date">{{ event.created_at }}</span>
+                    </div>
+                    <h4>{{ event.batch_name }}</h4>
+                    <p>{{ event.description }}</p>
+                    {% if event.affected_date %}
+                    <p class="affected-date">📅 影响日期：{{ event.affected_date }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>暂无天气事件记录</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

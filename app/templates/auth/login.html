@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}登录 - 农源认养{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h2 class="auth-title">欢迎回来</h2>
+        <p class="auth-subtitle">登录您的账户</p>
+        
+        {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+        {% endif %}
+        
+        <form method="post" action="/auth/login" class="auth-form">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" name="username" required class="form-input" placeholder="请输入用户名">
+            </div>
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" required class="form-input" placeholder="请输入密码">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">登录</button>
+        </form>
+        
+        <div class="auth-footer">
+            <p>还没有账户？<a href="/auth/register">立即注册</a></p>
+        </div>
+        
+        <div class="demo-accounts">
+            <h4>演示账户</h4>
+            <ul>
+                <li>管理员：admin / admin123</li>
+                <li>农户：farmer_zhang / farmer123</li>
+                <li>消费者：consumer_wang / consumer123</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

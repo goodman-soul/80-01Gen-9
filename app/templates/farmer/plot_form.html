@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}{% if plot %}编辑地块{% else %}新增地块{% endif %} - 农户中心{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3>农户中心</h3>
+            <p>{{ current_user.full_name }}</p>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="/farmer/dashboard" class="sidebar-link">📊 控制台</a></li>
+            <li><a href="/farmer/plots" class="sidebar-link active">🌱 我的地块</a></li>
+            <li><a href="/farmer/batches" class="sidebar-link">📦 认养批次</a></li>
+            <li><a href="/farmer/adoptions" class="sidebar-link">📋 认养订单</a></li>
+            <li><a href="/farmer/weather" class="sidebar-link">🌤️ 天气事件</a></li>
+        </ul>
+    </div>
+    
+    <div class="main-panel">
+        <div class="page-header">
+            <div>
+                <h2>{% if plot %}编辑地块{% else %}新增地块{% endif %}</h2>
+                <p>{% if plot %}修改地块信息{% else %}添加新的地块{% endif %}</p>
+            </div>
+            <a href="/farmer/plots" class="btn btn-outline">返回列表</a>
+        </div>
+        
+        {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+        {% endif %}
+        
+        <div class="form-card">
+            <form method="post" action="{% if plot %}/farmer/plots/{{ plot.id }}/edit{% else %}/farmer/plots/new{% endif %}" class="form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">地块名称 *</label>
+                        <input type="text" id="name" name="name" required class="form-input" 
+                               value="{{ plot.name if plot else '' }}" placeholder="例如：张家苹果园">
+                    </div>
+                    <div class="form-group">
+                        <label for="type">地块类型 *</label>
+                        <select id="type" name="type" required class="form-input">
+                            <option value="果园" {% if plot and plot.type == '果园' %}selected{% endif %}>果园</option>
+                            <option value="茶田" {% if plot and plot.type == '茶田' %}selected{% endif %}>茶田</option>
+                            <option value="菜地" {% if plot and plot.type == '菜地' %}selected{% endif %}>菜地</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="area">面积（亩） *</label>
+                        <input type="number" id="area" name="area" required step="0.01" min="0" 
+                               class="form-input" value="{{ plot.area if plot else '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="location">所在地区</label>
+                        <input type="text" id="location" name="location" class="form-input" 
+                               value="{{ plot.location if plot else '' }}" placeholder="例如：山东省烟台市">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">地块描述</label>
+                    <textarea id="description" name="description" rows="4" class="form-input" 
+                              placeholder="介绍一下您的地块特色、种植方式等">{{ plot.description if plot else '' }}</textarea>
+                </div>
+                
+                {% if plot %}
+                <div class="form-group">
+                    <label for="status">状态</label>
+                    <select id="status" name="status" class="form-input">
+                        <option value="active" {% if plot.status == 'active' %}selected{% endif %}>运营中</option>
+                        <option value="inactive" {% if plot.status == 'inactive' %}selected{% endif %}>已停用</option>
+                    </select>
+                </div>
+                {% endif %}
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        {% if plot %}保存修改{% else %}创建地块{% endif %}
+                    </button>
+                    <a href="/farmer/plots" class="btn btn-outline">取消</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

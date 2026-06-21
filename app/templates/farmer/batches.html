@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}认养批次 - 农户中心{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3>农户中心</h3>
+            <p>{{ current_user.full_name }}</p>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="/farmer/dashboard" class="sidebar-link">📊 控制台</a></li>
+            <li><a href="/farmer/plots" class="sidebar-link">🌱 我的地块</a></li>
+            <li><a href="/farmer/batches" class="sidebar-link active">📦 认养批次</a></li>
+            <li><a href="/farmer/adoptions" class="sidebar-link">📋 认养订单</a></li>
+            <li><a href="/farmer/weather" class="sidebar-link">🌤️ 天气事件</a></li>
+        </ul>
+    </div>
+    
+    <div class="main-panel">
+        <div class="page-header">
+            <div>
+                <h2>认养批次</h2>
+                <p>管理您的认养批次</p>
+            </div>
+            <a href="/farmer/batches/new" class="btn btn-primary">+ 新增批次</a>
+        </div>
+        
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>批次名称</th>
+                        <th>所属地块</th>
+                        <th>价格</th>
+                        <th>认养进度</th>
+                        <th>采摘日期</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for batch in batches %}
+                    <tr>
+                        <td>
+                            <strong>{{ batch.name }}</strong>
+                            <br><small>{{ batch.description[:30] }}...</small>
+                        </td>
+                        <td>{{ batch.plot_name }}</td>
+                        <td>¥{{ "%.2f"|format(batch.price) }}/{{ batch.unit }}</td>
+                        <td>
+                            <div class="progress-cell">
+                                <div class="progress-bar small">
+                                    <div class="progress-fill" style="width: {{ batch.progress }}%"></div>
+                                </div>
+                                <span>{{ batch.adopted_quantity }} / {{ batch.total_quantity }}</span>
+                            </div>
+                        </td>
+                        <td>{{ batch.harvest_date or '-' }}</td>
+                        <td><span class="status-badge status-{{ batch.status }}">{{ batch.status }}</span></td>
+                        <td>
+                            <a href="/farmer/batches/{{ batch.id }}/edit" class="btn btn-small btn-outline">编辑</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if not batches %}
+        <div class="empty-state">
+            <p>还没有批次，点击右上角新增您的第一个批次</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

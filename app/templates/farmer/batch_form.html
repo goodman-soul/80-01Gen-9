@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}{% if batch %}编辑批次{% else %}新增批次{% endif %} - 农户中心{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3>农户中心</h3>
+            <p>{{ current_user.full_name }}</p>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="/farmer/dashboard" class="sidebar-link">📊 控制台</a></li>
+            <li><a href="/farmer/plots" class="sidebar-link">🌱 我的地块</a></li>
+            <li><a href="/farmer/batches" class="sidebar-link active">📦 认养批次</a></li>
+            <li><a href="/farmer/adoptions" class="sidebar-link">📋 认养订单</a></li>
+            <li><a href="/farmer/weather" class="sidebar-link">🌤️ 天气事件</a></li>
+        </ul>
+    </div>
+    
+    <div class="main-panel">
+        <div class="page-header">
+            <div>
+                <h2>{% if batch %}编辑批次{% else %}新增批次{% endif %}</h2>
+                <p>{% if batch %}修改批次信息{% else %}发布新的认养批次{% endif %}</p>
+            </div>
+            <a href="/farmer/batches" class="btn btn-outline">返回列表</a>
+        </div>
+        
+        {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+        {% endif %}
+        
+        {% if not plots %}
+        <div class="alert alert-warning">
+            请先创建地块，然后再发布认养批次。<a href="/farmer/plots/new">去创建地块 →</a>
+        </div>
+        {% else %}
+        <div class="form-card">
+            <form method="post" action="{% if batch %}/farmer/batches/{{ batch.id }}/edit{% else %}/farmer/batches/new{% endif %}" class="form">
+                {% if not batch %}
+                <div class="form-group">
+                    <label for="plot_id">所属地块 *</label>
+                    <select id="plot_id" name="plot_id" required class="form-input">
+                        {% for plot in plots %}
+                        <option value="{{ plot.id }}">{{ plot.name }} ({{ plot.type }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">批次名称 *</label>
+                        <input type="text" id="name" name="name" required class="form-input" 
+                               value="{{ batch.name if batch else '' }}" placeholder="例如：2024秋季红富士">
+                    </div>
+                    <div class="form-group">
+                        <label for="unit">计量单位 *</label>
+                        <input type="text" id="unit" name="unit" required class="form-input" 
+                               value="{{ batch.unit if batch else '斤' }}" placeholder="例如：斤、两、份">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">批次描述</label>
+                    <textarea id="description" name="description" rows="3" class="form-input" 
+                              placeholder="介绍一下本批次的特色、品种等">{{ batch.description if batch else '' }}</textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="price">单价（元） *</label>
+                        <input type="number" id="price" name="price" required step="0.01" min="0" 
+                               class="form-input" value="{{ batch.price if batch else '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="total_quantity">总数量 *</label>
+                        <input type="number" id="total_quantity" name="total_quantity" required min="1" 
+                               class="form-input" value="{{ batch.total_quantity if batch else '' }}">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="harvest_date">预计采摘日期</label>
+                        <input type="date" id="harvest_date" name="harvest_date" class="form-input" 
+                               value="{{ batch.harvest_date if batch else '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="delivery_methods">配送方式</label>
+                        <input type="text" id="delivery_methods" name="delivery_methods" class="form-input" 
+                               value="{{ batch.delivery_methods if batch else '' }}" placeholder="用逗号分隔，如：自提,快递,配送">
+                    </div>
+                </div>
+                
+                {% if batch %}
+                <div class="form-group">
+                    <label for="status">状态</label>
+                    <select id="status" name="status" class="form-input">
+                        <option value="open" {% if batch.status == 'open' %}selected{% endif %}>认养中</option>
+                        <option value="closed" {% if batch.status == 'closed' %}selected{% endif %}>已结束</option>
+                        <option value="harvesting" {% if batch.status == 'harvesting' %}selected{% endif %}>采摘中</option>
+                    </select>
+                </div>
+                {% endif %}
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        {% if batch %}保存修改{% else %}发布批次{% endif %}
+                    </button>
+                    <a href="/farmer/batches" class="btn btn-outline">取消</a>
+                </div>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
