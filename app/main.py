@@ -19,11 +19,16 @@ def startup_event():
     init_db()
 
 
+def fetch_all_dicts(cursor):
+    columns = [desc[0] for desc in cursor.description]
+    return [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+
 @app.get("/")
 async def root(request: Request, db=Depends(get_db)):
     current_user = await get_current_user(request, db)
     
-    batches = db.execute("""
+    cursor = db.execute("""
         SELECT b.id, b.name, b.description, b.price, b.unit, b.total_quantity,
                b.adopted_quantity, b.harvest_date, b.status,
                p.name as plot_name, p.type as plot_type, p.location as plot_location,
@@ -34,25 +39,26 @@ async def root(request: Request, db=Depends(get_db)):
         WHERE b.status = 'open'
         ORDER BY b.created_at DESC
         LIMIT 8
-    """).fetchall()
+    """)
+    batches = fetch_all_dicts(cursor)
     
     batch_list = []
     for b in batches:
-        progress = int((b[6] / b[5]) * 100) if b[5] > 0 else 0
+        progress = int((b["adopted_quantity"] / b["total_quantity"]) * 100) if b["total_quantity"] > 0 else 0
         batch_list.append({
-            "id": b[0],
-            "name": b[1],
-            "description": b[2],
-            "price": b[3],
-            "unit": b[4],
-            "total_quantity": b[5],
-            "adopted_quantity": b[6],
-            "harvest_date": str(b[7]) if b[7] else "",
-            "status": b[8],
-            "plot_name": b[9],
-            "plot_type": b[10],
-            "plot_location": b[11],
-            "farmer_name": b[12],
+            "id": b["id"],
+            "name": b["name"],
+            "description": b["description"],
+            "price": b["price"],
+            "unit": b["unit"],
+            "total_quantity": b["total_quantity"],
+            "adopted_quantity": b["adopted_quantity"],
+            "harvest_date": str(b["harvest_date"]) if b["harvest_date"] else "",
+            "status": b["status"],
+            "plot_name": b["plot_name"],
+            "plot_type": b["plot_type"],
+            "plot_location": b["plot_location"],
+            "farmer_name": b["farmer_name"],
             "progress": progress
         })
     

@@ -190,8 +190,8 @@
                 <label for="new_batch_id">选择新批次</label>
                 <select id="new_batch_id" name="new_batch_id" required class="form-input">
                     <option value="">请选择批次</option>
-                    {% for batch in [] %}
-                    <option value="{{ batch.id }}">{{ batch.name }} - ¥{{ batch.price }}/{{ batch.unit }}</option>
+                    {% for batch in available_batches %}
+                    <option value="{{ batch.id }}">{{ batch.name }} - ¥{{ batch.price }}/{{ batch.unit }} (剩余{{ batch.remaining }}{{ batch.unit }})</option>
                     {% endfor %}
                 </select>
             </div>
